@@ -1,0 +1,30 @@
+{
+  "name": "app",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --env-file .env --watch src/index.js",
+    "seed": "node --env-file .env --watch data/seed.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "erickwendel",
+  "license": "MIT",
+  "description": "",
+  "engines": {
+    "node": "v22.13.1"
+  },
+  "type": "module",
+  "dependencies": {
+    "@langchain/community": "^0.3.28",
+    "@langchain/core": "^0.3.37",
+    "@langchain/google-genai": "^0.1.8",
+    "@langchain/ollama": "^0.1.5",
+    "@langchain/openai": "^0.4.2",
+    "neo4j-driver": "^5.28.0"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^9.4.0"
+  }
+}
