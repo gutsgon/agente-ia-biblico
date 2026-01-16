@@ -1,92 +1,192 @@
-# Neo4j AI-Powered Query System
+# Agente de IA Bíblico no WhatsApp (TCC)
 
-## Overview
+## 📖 Visão Geral do Projeto
 
-This project integrates Neo4j with AI models to generate Cypher queries from natural language prompts. It utilizes local AI models for natural language processing and a vector database approach for efficient querying.
+Este projeto tem como objetivo desenvolver um **agente de Inteligência Artificial** capaz de responder perguntas bíblicas diretamente pelo **WhatsApp**, auxiliando usuários em **estudos bíblicos rasos ou aprofundados**.
 
-This is the source code shown on my [video tutorial](https://ewbr.cc/rag-ai-neo4j), consider watching it first!
+O agente utiliza técnicas de **RAG (Retrieval-Augmented Generation)** para buscar trechos relevantes da Bíblia e fornecer respostas contextualizadas, mantendo fidelidade ao texto bíblico.
 
-## Folder Structure
+O projeto foi idealizado para fins **acadêmicos (TCC)**, com foco em:
+- Arquitetura bem definida
+- Reprodutibilidade
+- Segurança de dados
+- Processos claros de inicialização e recuperação
+
+---
+
+## 🧠 Tecnologias Utilizadas
+
+- **Ollama** – Execução de modelos LLM localmente
+  - `gemma3:4b` → geração de respostas (modelo principal) 
+  - `llama3.2:3b` → geração de respostas (modelo de fallback)
+  - `llama3.1:8b` → geração de respostas (modelo reserva)
+
+- **Ollama** - Execução de modelos de embedding para RAG localmente
+  - `bge-m3` → embeddings para RAG (modelo principal)
+  - `nomic-embed-text` → embeddings para RAG (modelo reserva)
+
+- **Qdrant** – Banco vetorial
+- **PostgreSQL** – Persistência de dados do Evolution API
+- **Evolution API** – Integração com WhatsApp
+- **Docker / Docker Compose**
+- **Linux (Ubuntu Server)**
+
+---
+
+## 🏗️ Arquitetura (Visão Geral)
+
 ```
-.
-├── README.md                  # Project documentation
-├── data                        # Database-related files
-│   ├── courses.json            # Course data
-│   └── seed.js                 # Database seeding script
-├── docker-compose.yml          # Configuration for running Neo4j
-├── other-examples              # Additional use cases
-│   ├── neo4j-vector.js         # Example using vector search in Neo4j
-│   └── rag                     # Retrieval-Augmented Generation example
-│       ├── data                # Sample data for RAG
-│       │   └── javascript.txt  # Text data for queries
-│       ├── index.js            # Implementation for RAG
-│       ├── package-lock.json   # Dependency lock file
-│       └── package.json        # Dependencies
-├── package-lock.json           # Dependency lock file
-├── package.json                # Project dependencies
-├── prompts                     # AI-related prompts
-│   ├── context.md              # Context prompt template
-│   ├── nlpToCypher.md          # NLP to Cypher prompt template
-│   └── responseTemplateFromJson.md # Response formatting template
-├── references.txt              # Related documentation/references
-├── request.sh                  # Script for testing caching mechanism
-├── script.txt                  # Miscellaneous script
-└── src                         # Source code
-    ├── ai.js                   # AI model interaction logic
-    └── index.js                # Main application entry point
+WhatsApp
+   ↓
+Evolution API
+   ↓
+Agente IA (RAG)
+   ↓
+N8N
+   ↓
+Ollama ── Qdrant
+   ↓
+PostgreSQL
 ```
 
-## Setup Instructions
-### Prerequisites
-Ensure you have the following installed:
-- [Ollama](https://ollama.ai) for running local AI models
-- [Docker](https://www.docker.com) for running Neo4j
-- [Node.js](https://nodejs.org) (v22+ recommended)
+---
 
-### Installation Steps
-1. **Start Ollama**
-   ```sh
-   ollama serve
-   ```
-2. **Download AI models**
-   ```sh
-   ollama pull gemma:7b
-   ollama pull deepseek-coder:6.7b
-   ```
-3. **Start Neo4j**
-   ```sh
-   docker-compose up -d
-   ```
-4. **Install dependencies**
-   ```sh
-   npm ci
-   ```
-5. **Seed the database**
-   ```sh
-   npm run seed
-   ```
-6. **Run the application**
-   ```sh
-   npm run dev
-   ```
-7. **Test caching mechanism** (Run twice to observe caching behavior)
-   ```sh
-   sh request.sh
-   ```
+## 🚀 Inicialização do Ambiente
 
-## Features
-- AI-powered natural language to Cypher query conversion
-- Neo4j integration with vector search capabilities
-- RAG (Retrieval-Augmented Generation) example included
-- Database seeding for reproducible testing
-- Dockerized Neo4j instance
+### 1️⃣ Subir os containers
 
-## Usage
-Once the application is running, you can send natural language queries to the AI, which will convert them into optimized Cypher queries for Neo4j. The system caches responses for better performance on repeated queries.
+```bash
+docker compose up -d
+```
 
-## Contributing
-Feel free to open issues and submit PRs for enhancements!
+---
 
-## License
-MIT License
+## 🤖 Configuração do Ollama
 
+O Ollama **não vem com modelos por padrão**. Para o projeto é necessário um LLM e um para o embedding e RAG (caso tenha dúvidas sobre os modelos leia novamente acima em **Tecnologias**). Para baixar os modelos execute:
+
+```bash
+docker exec -it ollama ollama pull gemma3:4b 
+docker exec -it ollama ollama pull llama3.2:3b 
+docker exec -it ollama ollama pull llama3.1:8b 
+docker exec -it ollama ollama pull nomic-embed-text 
+docker exec -it ollama pull bge-m3 
+```
+
+Verifique:
+
+```bash
+docker exec -it ollama ollama list
+```
+
+Para rodar um modelo execute (exemplo):
+
+```bash
+docker exec -it ollama ollama run gemma3:4b
+docker exec -it ollama ollama run bge-m3
+```
+
+## Uso de RAG (Retrieval-Augmented Generation)
+
+Para evitar respostas baseadas exclusivamente em conhecimento pré-treinado do modelo, foi adotada a abordagem RAG (Retrieval-Augmented Generation).
+
+Os textos bíblicos são previamente vetorizados e armazenados no banco vetorial Qdrant. A cada pergunta, apenas trechos semanticamente relevantes são recuperados e fornecidos como contexto ao modelo de linguagem.
+
+Essa abordagem garante:
+- Redução de alucinações
+- Maior fidelidade textual
+- Melhor desempenho computacional
+- Rastreabilidade das respostas
+
+---
+
+
+## 📦 Persistência de Dados
+
+Todos os dados são salvos em:
+
+```text
+/home/user/docker-data/
+├── postgres/
+├── qdrant/
+├── ollama/
+└── backups/
+```
+
+Isso garante **resistência à perda de dados** e facilita backups.
+
+---
+
+## 💾 Backup Automático
+
+O backup é feito via script Bash utilizando `cron`.
+
+### Execução manual:
+```bash
+/backup/backup.sh
+```
+
+### Cron (exemplo):
+```bash
+0 2 * * * /backup/backup.sh
+```
+
+Os backups incluem:
+- PostgreSQL
+- Qdrant
+- Dados do Ollama
+
+---
+
+## ♻️ Restauração de Backup
+
+### PostgreSQL
+```bash
+docker exec -i postgres psql -U postgres evolution_db < backup.sql
+```
+
+### Qdrant
+```bash
+docker compose down
+cp -r backup/qdrant/* /home/paulo/docker-data/qdrant/
+docker compose up -d
+```
+
+### Ollama
+```bash
+cp -r backup/ollama/* /home/paulo/docker-data/ollama/
+```
+
+---
+
+## 🧪 Objetivo Acadêmico
+
+Este agente visa:
+- Democratizar o acesso ao estudo bíblico
+- Auxiliar líderes, estudantes e curiosos
+- Servir como **prova de conceito** para uso de IA em contextos educacionais e religiosos
+
+---
+
+## ✅ Checklist Anti‑Perda de Dados
+
+- [x] Volumes persistentes fora do Docker
+- [x] Backup automático diário
+- [x] Documentação de restauração
+- [x] Modelos versionados
+- [x] Processo de inicialização documentado
+
+---
+
+## 📌 Observações Finais
+
+Este projeto prioriza:
+- Clareza de processos
+- Reprodutibilidade acadêmica
+- Segurança e integridade dos dados
+
+Qualquer reinstalação do sistema **não compromete o projeto**, desde que os backups estejam preservados.
+
+---
+
+✝️ *“Lâmpada para os meus pés é a tua palavra, e luz para o meu caminho.”* – Salmos 119:105

@@ -1,86 +1,119 @@
-version: '3.8'
-
 services:
-  neo4j:
-    image: neo4j:5.14.0-community
-    container_name: neo4j
-    restart: unless-stopped
-    volumes:
-      - ./neo4j/data:/data
-      - ./neo4j/logs:/logs
-      - ./neo4j/plugins:/plugins
-      - ./import:/var/lib/neo4j/import
-    ports:
-      - "7474:7474"  # Neo4j Browser
-      - "7687:7687"  # Bolt Protocol (for queries)
+
+  postgres:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
     environment:
-      - NEO4J_AUTH=neo4j/123
-      - NEO4JLABS_PLUGINS=["apoc"]
-      - NEO4J_apoc_import_file_enabled=true
-      # CALL apoc.export.csv.all("/var/lib/neo4j/import/neo4j-export.csv", {})
-      # mv /var/lib/neo4j/import/neo4j-export.csv /data/neo4j-export.csv
-      - NEO4J_apoc_export_file_enabled=true
-      - NEO4J_apoc_import_file_use__neo4j__config=true
+      POSTGRES_USER: n8n_user
+      POSTGRES_PASSWORD: n8n_password
+      POSTGRES_DB: n8n_db
+    volumes:
+      - /home/paulo/docker-data/postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
 
-    # depends_on:
-    #   - ollama
+  redis:
+    image: redis:alpine
+    container_name: redis_cache
+    restart: always
+    volumes:
+      - /home/paulo/docker-data/redis:/data
+    ports:
+      - "6379:6379"
 
-  # ollama:
-  #   image: ollama/ollama
-  #   container_name: ollama
-  #   platform: linux/arm64
-  #   restart: unless-stopped
-  #   volumes:
-  #     - ./ollama-data:/root/.ollama  # Shared volume for models
-  #   ports:
-  #     - "11434:11434"
+  ollama:
+    image: ollama/ollama
+    container_name: ollama_llm
+    restart: always
+    volumes:
+      - /home/paulo/docker-data/ollama:/root/.ollama
+    ports:
+      - "11434:11434"
+    environment:
+     - OLLAMA_NUM_PARALLEL=1
+     - OLLAMA_MAX_LOADED_MODELS=1
+     - OLLAMA_KEEP_ALIVE=24h
+     - OLLAMA_FLASH_ATTENTION=1
+     - OLLAMA_NUM_THREADS=10
+    deploy:
+      resources:
+        limits:
+          cpus: '12.0'
+          memory: 24G
+        reservations:
+          memory: 7G
 
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: n8n_orchestrator
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_DATABASE: n8n_db
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_USER: n8n_user
+      DB_POSTGRESDB_PASSWORD: n8n_password
+      N8N_CONCURRENCY_PRODUCTION_LIMIT: 3
+      NODE_OPTIONS: --max-old-space-size=4096
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '3.0'
+        reservations:
+          memory: 2G
+    volumes:
+      - /home/paulo/docker-data/n8n:/home/node/.n8n
+      - /home/paulo/Desktop/agente-ia-biblico/rag:/home/node/.n8n-files
+    depends_on:
+      - postgres
+      - redis
 
-  # ollama-model-loader:
-  #   image: docker:latest  # 🔥 Uses Docker CLI instead of Ollama
-  #   container_name: ollama-model-loader
-  #   depends_on:
-  #     - ollama
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock  # 🔥 Allows running commands inside containers
-  #   entrypoint: ["/bin/sh", "-c"]
-  #   command:
-  #     - |
-  #       echo "⏳ Waiting for Ollama to be ready..."
-  #       until docker exec ollama ollama list >/dev/null 2>&1; do
-  #           sleep 2
-  #       done
-  #       echo "📥 Pulling models inside Ollama container..."
-  #       docker exec ollama ollama pull gemma:1b
-  #       docker exec ollama ollama pull yi-coder:1.5b
-  #       docker exec ollama ollama pull nomic-embed-text
+  evolution-api:
+    image: evoapicloud/evolution-api:latest
+    container_name: evolution_api
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SERVER_URL: http://localhost:8080
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis:6379/0
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://n8n_user:n8n_password@postgres:5432/evolution_db?sslmode=disable
+      DATABASE_CONNECTION_CLIENT_NAME: evolution_api
+      AUTHENTICATION_API_KEY: l[[6]f3R136#An9.6trP(J+K}e7v7Ck9
+      CONFIG_SESSION_PHONE_VERSION: 2.3000.1031548524
+      CONFIG_SESSION_PHONE_PLATFORM: Chrome
+      CONFIG_SESSION_SYNC_FULL_HISTORY: "false"
+      CONFIG_SESSION_IGNORE_GROUPS: "false"
+      CONFIG_SESSION_READ_MESSAGES: "false"
+      CONFIG_SESSION_PHONE_LID_CONTEXT: "true"
+      CONFIG_SESSION_PHONE_LID_ALWAYS: "true"
+    depends_on:
+      - redis
+      - postgres
 
-  #       echo "✅ Models downloaded. Exiting..."
-  #   restart: "no"
-
-
-    # curl http://localhost:11434/api/tags
-
-  # app:
-  #   build: ./app
-  #   container_name: app
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3001:3001"
-  #   environment:
-  #     - PORT=3001
-  #     - NODE_ENV=production
-  #     - OLLAMA_BASE_URL='http://ollama:11434/api/v1'
-  #     - OPENAI_API_KEY=ollama
-
-  #     - NLP_MODEL='gemma:2b'
-  #     - CODER_MODEL='deepseek-coder:6.7b'
-
-  #     - NEO4J_USER=neo4j
-  #     - NEO4J_PASSWORD=password
-  #     - NEO4J_URI=bolt://neo4j:7687
-  #     - NEO4J_DATABASE=neo4j
-
-  #   depends_on:
-  #     - neo4j
-  #     - ollama
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant_db
+    restart: always
+    ports:
+      - "6333:6333"
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+    volumes:
+      - /home/paulo/docker-data/qdrant:/qdrant/storage
