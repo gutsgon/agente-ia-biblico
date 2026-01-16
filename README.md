@@ -147,13 +147,13 @@ docker exec -i postgres psql -U postgres evolution_db < backup.sql
 ### Qdrant
 ```bash
 docker compose down
-cp -r backup/qdrant/* /home/paulo/docker-data/qdrant/
+cp -r backup/qdrant/* /home/user/docker-data/qdrant/
 docker compose up -d
 ```
 
 ### Ollama
 ```bash
-cp -r backup/ollama/* /home/paulo/docker-data/ollama/
+cp -r backup/ollama/* /home/user/docker-data/ollama/
 ```
 
 ---
