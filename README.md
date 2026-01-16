@@ -61,8 +61,7 @@ docker compose up -d
 
 ---
 
-## 🤖 Configuração do Ollama
-
+## 2️⃣ 🤖 Configuração do Ollama
 O Ollama **não vem com modelos por padrão**. Para o projeto é necessário um LLM e um para o embedding e RAG (caso tenha dúvidas sobre os modelos leia novamente acima em **Tecnologias**). Para baixar os modelos execute:
 
 ```bash
