@@ -65,24 +65,24 @@ docker compose up -d
 O Ollama **não vem com modelos por padrão**. Para o projeto é necessário um LLM e um para o embedding e RAG (caso tenha dúvidas sobre os modelos leia novamente acima em **Tecnologias**). Para baixar os modelos execute:
 
 ```bash
-docker exec -it ollama ollama pull gemma3:4b 
-docker exec -it ollama ollama pull llama3.2:3b 
-docker exec -it ollama ollama pull llama3.1:8b 
-docker exec -it ollama ollama pull nomic-embed-text 
-docker exec -it ollama pull bge-m3 
+docker exec -it ollama_llm ollama pull gemma3:4b 
+docker exec -it ollama_llm ollama pull llama3.2:3b 
+docker exec -it ollama_llm ollama pull llama3.1:8b 
+docker exec -it ollama_llm ollama pull nomic-embed-text 
+docker exec -it ollama_llm ollama pull bge-m3 
 ```
 
 Verifique:
 
 ```bash
-docker exec -it ollama ollama list
+docker exec -it ollama_llm ollama list
 ```
 
 Para rodar um modelo execute (exemplo):
 
 ```bash
-docker exec -it ollama ollama run gemma3:4b
-docker exec -it ollama ollama run bge-m3
+docker exec -it ollama_llm ollama run gemma3:4b
+docker exec -it ollama_llm ollama run bge-m3
 ```
 
 ## Uso de RAG (Retrieval-Augmented Generation)
