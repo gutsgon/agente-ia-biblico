@@ -15,7 +15,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2.0'
+          cpus: '1.0'
           memory: 2G
 
   redis:
@@ -44,8 +44,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '12.0'
-          memory: 24G
+          cpus: '10.0'
+          memory: 12G
         reservations:
           memory: 7G
 
@@ -62,12 +62,13 @@ services:
       DB_POSTGRESDB_PORT: 5432
       DB_POSTGRESDB_USER: n8n_user
       DB_POSTGRESDB_PASSWORD: n8n_password
-      N8N_CONCURRENCY_PRODUCTION_LIMIT: 3
+      N8N_CONCURRENCY_PRODUCTION_LIMIT: 10
       NODE_OPTIONS: --max-old-space-size=4096
+      EXECUTIONS_PROCESS: main
     deploy:
       resources:
         limits:
-          memory: 4G
+          memory: 10G
           cpus: '3.0'
         reservations:
           memory: 2G
@@ -117,3 +118,6 @@ services:
           memory: 4G
     volumes:
       - /home/paulo/docker-data/qdrant:/qdrant/storage
+
+  
+  
