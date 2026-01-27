@@ -107,4 +107,35 @@ plt.tight_layout()
 plt.savefig("/output/hardware_ram_pizza.png")
 plt.clf()
 
+# =========================
+# 5. ACURÁCIA MÉDIA POR MODELO
+# =========================
+accuracy_df = pd.read_sql("""
+SELECT
+  m.name || ':' || m.parameters AS model,
+  AVG(a.score) AS avg_accuracy
+FROM llm_metrics.response_accuracy a
+JOIN llm_metrics.responses r
+  ON r.id = a.response_id
+JOIN llm_metrics.models m
+  ON m.id = r.model_id
+GROUP BY model
+ORDER BY model;
+""", conn)
+
+accuracy_df.plot(
+    kind="bar",
+    x="model",
+    y="avg_accuracy",
+    legend=False,
+    title="Acurácia Média das Respostas por Modelo",
+    ylim=(0, 1)
+)
+
+plt.ylabel("Acurácia (0–1)")
+plt.tight_layout()
+plt.savefig("/output/acuracia_media.png")
+plt.clf()
+
+
 print("✅ Gráficos gerados com sucesso.")
