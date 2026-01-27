@@ -52,9 +52,9 @@ lat_df.plot(
     x="model",
     y="avg_latency",
     legend=False,
-    title="Tempo Médio de Resposta (ms)"
+    title="Tempo Médio de Resposta (seconds)"
 )
-plt.ylabel("ms")
+plt.ylabel("seconds")
 plt.tight_layout()
 plt.savefig("/output/latencia_media.png")
 plt.clf()
@@ -76,13 +76,23 @@ JOIN llm_metrics.models m ON m.id = e.model_id
 GROUP BY model;
 """, conn)
 
-hw_df.set_index("model")[["cpu", "ram", "disk_read", "disk_write", "network"]] \
-    .plot(kind="bar", title="Uso Médio de Hardware por Modelo")
+ax = hw_df.set_index("model")[["cpu", "ram", "disk_read", "disk_write", "network"]] \
+    .plot(kind="bar", figsize=(10, 6))
 
-plt.ylabel("Média")
+ax.set_title("Uso Médio de Hardware por Modelo")
+ax.set_ylabel("Média")
+
+ax.legend(
+    title="Métrica",
+    loc="upper left",
+    bbox_to_anchor=(1.02, 1),
+    borderaxespad=0
+)
+
 plt.tight_layout()
-plt.savefig("/output/hardware_geral.png")
+plt.savefig("/output/hardware_geral.png", bbox_inches="tight")
 plt.clf()
+
 
 # =========================
 # 4. HARDWARE – PIZZA (RAM)
