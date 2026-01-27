@@ -64,7 +64,6 @@ services:
       DB_POSTGRESDB_PASSWORD: n8n_password
       N8N_CONCURRENCY_PRODUCTION_LIMIT: 10
       NODE_OPTIONS: --max-old-space-size=4096
-      EXECUTIONS_PROCESS: main
     deploy:
       resources:
         limits:
@@ -118,6 +117,23 @@ services:
           memory: 4G
     volumes:
       - /home/paulo/docker-data/qdrant:/qdrant/storage
+  
+  metrics-analyzer:
+    build: ./metrics_analyzer
+    container_name: llm_metrics_analyzer
+    working_dir: /app
+    volumes:
+      - ./metrics_output:/output
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: llm_metrics_db
+      POSTGRES_USER: n8n_user
+      POSTGRES_PASSWORD: n8n_password
+    depends_on:
+      - postgres
+
+
 
   
   
