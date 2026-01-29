@@ -1,0 +1,140 @@
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: n8n_user
+      POSTGRES_PASSWORD: n8n_password
+      POSTGRES_DB: n8n_db
+    volumes:
+      - /home/paulo/docker-data/postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+
+  redis:
+    image: redis:alpine
+    container_name: redis_cache
+    restart: always
+    volumes:
+      - /home/paulo/docker-data/redis:/data
+    ports:
+      - "6379:6379"
+
+  ollama:
+    image: ollama/ollama
+    container_name: ollama_llm
+    restart: always
+    volumes:
+      - /home/paulo/docker-data/ollama:/root/.ollama
+    ports:
+      - "11434:11434"
+    environment:
+     - OLLAMA_NUM_PARALLEL=1
+     - OLLAMA_MAX_LOADED_MODELS=1
+     - OLLAMA_KEEP_ALIVE=24h
+     - OLLAMA_FLASH_ATTENTION=1
+     - OLLAMA_NUM_THREADS=10
+    deploy:
+      resources:
+        limits:
+          cpus: '10.0'
+          memory: 12G
+        reservations:
+          memory: 7G
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: n8n_orchestrator
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_DATABASE: n8n_db
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_USER: n8n_user
+      DB_POSTGRESDB_PASSWORD: n8n_password
+      N8N_CONCURRENCY_PRODUCTION_LIMIT: 10
+      NODE_OPTIONS: --max-old-space-size=4096
+    deploy:
+      resources:
+        limits:
+          memory: 10G
+          cpus: '3.0'
+        reservations:
+          memory: 2G
+    volumes:
+      - /home/paulo/docker-data/n8n:/home/node/.n8n
+      - /home/paulo/Desktop/agente-ia-biblico/rag:/home/node/.n8n-files
+    depends_on:
+      - postgres
+      - redis
+
+  evolution-api:
+    image: evoapicloud/evolution-api:latest
+    container_name: evolution_api
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SERVER_URL: http://localhost:8080
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis:6379/0
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://n8n_user:n8n_password@postgres:5432/evolution_db?sslmode=disable
+      DATABASE_CONNECTION_CLIENT_NAME: evolution_api
+      AUTHENTICATION_API_KEY: l[[6]f3R136#An9.6trP(J+K}e7v7Ck9
+      CONFIG_SESSION_PHONE_VERSION: 2.3000.1031548524
+      CONFIG_SESSION_PHONE_PLATFORM: Chrome
+      CONFIG_SESSION_SYNC_FULL_HISTORY: "false"
+      CONFIG_SESSION_IGNORE_GROUPS: "false"
+      CONFIG_SESSION_READ_MESSAGES: "false"
+      CONFIG_SESSION_PHONE_LID_CONTEXT: "true"
+      CONFIG_SESSION_PHONE_LID_ALWAYS: "true"
+    depends_on:
+      - redis
+      - postgres
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant_db
+    restart: always
+    ports:
+      - "6333:6333"
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+    volumes:
+      - /home/paulo/docker-data/qdrant:/qdrant/storage
+  
+  metrics-analyzer:
+    build: ./metrics_analyzer
+    container_name: llm_metrics_analyzer
+    profiles: ["analise"]
+    working_dir: /app
+    volumes:
+      - ./metrics_output:/output
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: llm_metrics_db
+      POSTGRES_USER: n8n_user
+      POSTGRES_PASSWORD: n8n_password
+    depends_on:
+      - postgres
+
+
+
+  
+  
