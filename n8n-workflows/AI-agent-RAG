@@ -1,0 +1,437 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1584,
+        -144
+      ],
+      "id": "da34e447-0e20-44a8-ac3a-93effa70ba76",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "createCollection",
+        "collectionName": "biblia_rag_backup",
+        "vectors": "{\n    \"size\": 1024,\n    \"distance\": \"Cosine\"\n}\n",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-qdrant.qdrant",
+      "typeVersion": 1,
+      "position": [
+        400,
+        592
+      ],
+      "id": "3bafa2f5-0c8f-4c99-8572-3274b3cef5db",
+      "name": "Criando Collection da Biblia",
+      "credentials": {
+        "qdrantRestApi": {
+          "id": "HRPoWKQrQ6319NT4",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "createCollection",
+        "collectionName": "memoria_conversas",
+        "vectors": "{\n    \"size\": 768,\n    \"distance\": \"Cosine\"\n}\n",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-qdrant.qdrant",
+      "typeVersion": 1,
+      "position": [
+        608,
+        592
+      ],
+      "id": "482ae6b2-398a-4427-96cf-495011ee3aa3",
+      "name": "Criando Collection dos chats",
+      "credentials": {
+        "qdrantRestApi": {
+          "id": "HRPoWKQrQ6319NT4",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Criando coleções para salvar embendings\n\n**RAG da bíblia puro | RAG de conversas** ",
+        "height": 448,
+        "width": 704
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        96,
+        400
+      ],
+      "typeVersion": 1,
+      "id": "34fcfafc-4d91-4b31-a630-665ff0d08a4a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Criando Embendings com modelo nomic-embed-text do Ollama e salvando no banco vetorial\n\n## Esse fluxo faz a população de embendings para consulta do modelo llama3.1 com 8 bilhões de parâmetros, o qual vai utilizar da similaridade entre os embendings salvos com a pergunta do usuário, caso haja algo parecido o modelo utilizará o que recebeu de informação para responder o usuário\n",
+        "height": 784,
+        "width": 2096,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        96,
+        -464
+      ],
+      "typeVersion": 1,
+      "id": "5424b1d1-1c12-4c64-8aa4-3584107fa98b",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "model": "bge-m3:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        80
+      ],
+      "id": "e3fb61fb-dceb-473a-832a-4b5bb44ca049",
+      "name": "Nomic Embeddings",
+      "credentials": {
+        "ollamaApi": {
+          "id": "gCqeLPKz29jd5i4l",
+          "name": "Ollama"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $('Estruturando JSON').item.json.content }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "=livro",
+                "value": "={{ $('Loop Over Items').item.json.metadata.livro }}"
+              },
+              {
+                "name": "versiculo",
+                "value": "={{ $('Loop Over Items').item.json.metadata.versiculos }}"
+              },
+              {
+                "name": "capitulo",
+                "value": "={{ $('Loop Over Items').item.json.metadata.capitulo }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        2064,
+        64
+      ],
+      "id": "3ef1e2cb-bc31-4cea-b7b6-98b71f29bebe",
+      "name": "Document and Metadata Loader"
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        800,
+        -48
+      ],
+      "id": "7e791f31-47e0-4838-beca-207e3d7cc2c6",
+      "name": "Extraindo binário para JSON"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/.n8n-files/*.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        592,
+        -48
+      ],
+      "id": "672d4149-decf-47d9-86ea-fdf6aad428ec",
+      "name": "Lendo arquivos"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "biblia_rag_backup",
+          "mode": "list",
+          "cachedResultName": "biblia_rag_backup"
+        },
+        "embeddingBatchSize": 20,
+        "options": {
+          "contentPayloadKey": "=content"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        1888,
+        -128
+      ],
+      "id": "bd2430ae-622d-4d13-b879-da2a112c7f21",
+      "name": "Banco Vetorial",
+      "credentials": {
+        "qdrantApi": {
+          "id": "N8KBvMQi9cbTJ7eH",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        192,
+        592
+      ],
+      "id": "b510d7d0-c56a-40c8-8d9b-6f35d85974b3",
+      "name": "Cadastro Manual"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        -48
+      ],
+      "id": "5fdd7bc6-5919-4c36-8a51-96cc247a6617",
+      "name": "Separando Livros"
+    },
+    {
+      "parameters": {
+        "path": "262dcc09-944f-42f6-a5aa-a465f9b76da9",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        352,
+        -48
+      ],
+      "id": "661a9955-3b97-475e-aebb-004e10ed645d",
+      "name": "RAG",
+      "webhookId": "262dcc09-944f-42f6-a5aa-a465f9b76da9"
+    },
+    {
+      "parameters": {
+        "jsCode": "const dicionario = {\n  \"gn\": \"Gênesis\", \"ex\": \"Êxodo\", \"lv\": \"Levítico\", \"nm\": \"Números\", \"dt\": \"Deuteronômio\",\n  \"js\": \"Josué\", \"jz\": \"Juízes\", \"rt\": \"Rute\", \"1sm\": \"1 Samuel\", \"2sm\": \"2 Samuel\",\n  \"1rs\": \"1 Reis\", \"2rs\": \"2 Reis\", \"1cr\": \"1 Crônicas\", \"2cr\": \"2 Crônicas\",\n  \"ed\": \"Esdras\", \"ne\": \"Neemias\", \"et\": \"Ester\", \"jó\": \"Jó\", \"sl\": \"Salmos\",\n  \"pv\": \"Provérbios\", \"ec\": \"Eclesiastes\", \"ct\": \"Cânticos\", \"is\": \"Isaías\",\n  \"jr\": \"Jeremias\", \"lm\": \"Lamentações\", \"ez\": \"Ezequiel\", \"dn\": \"Daniel\",\n  \"os\": \"Oséias\", \"jl\": \"Joel\", \"am\": \"Amós\", \"ob\": \"Obadias\", \"jn\": \"Jonas\",\n  \"mq\": \"Miquéias\", \"na\": \"Naum\", \"hc\": \"Habacuque\", \"sf\": \"Sofonias\",\n  \"ag\": \"Ageu\", \"zc\": \"Zacarias\", \"ml\": \"Malaquias\", \"mt\": \"Mateus\",\n  \"mc\": \"Marcos\", \"lc\": \"Lucas\", \"jo\": \"João\", \"at\": \"Atos\", \"rm\": \"Romanos\",\n  \"1co\": \"1 Coríntios\", \"2co\": \"2 Coríntios\", \"gl\": \"Gálatas\", \"ef\": \"Efésios\",\n  \"fp\": \"Filipenses\", \"cl\": \"Colossenses\", \"1ts\": \"1 Tessalonicenses\",\n  \"2ts\": \"2 Tessalonicenses\", \"1tm\": \"1 Timóteo\", \"2tm\": \"2 Timóteo\",\n  \"tt\": \"Tito\", \"fm\": \"Filemom\", \"hb\": \"Hebreus\", \"tg\": \"Tiago\",\n  \"1pe\": \"1 Pedro\", \"2pe\": \"2 Pedro\", \"1jo\": \"1 João\", \"2jo\": \"2 João\",\n  \"3jo\": \"3 João\", \"jd\": \"Judas\", \"ap\": \"Apocalipse\"\n};\n\n\nconst items = $input.all();\nconst output = [];\n\nfor (const item of items) {\n  const json = item.json;\n\n  // 1️⃣ Apenas Gênesis (por enquanto)\n  if (json.abbrev !== \"gn\") continue;\n\n  const livro = dicionario[json.abbrev];\n  const chapters = json.chapters;\n\n  if (!Array.isArray(chapters)) continue;\n\n  // 2️⃣ Percorre capítulos\n  for (let c = 0; c < chapters.length; c++) {\n    const capitulo = c + 1;\n    const verses = chapters[c];\n\n    if (!Array.isArray(verses)) continue;\n\n    // 3️⃣ Janela deslizante de 3 versículos\n    for (let v = 0; v < verses.length - 2; v++) {\n      const texto = `${verses[v]} ${verses[v + 1]} ${verses[v + 2]}`.trim();\n\n      output.push({\n        json: {\n          content: texto,\n          metadata: {\n            livro,\n            capitulo,\n            versiculos: `${v + 1}-${v + 3}`\n          }\n        }\n      });\n    }\n  }\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1264,
+        -48
+      ],
+      "id": "378a8f77-1164-41eb-b8d4-0768e16c6de8",
+      "name": "Estruturando JSON"
+    },
+    {
+      "parameters": {
+        "content": "# Começar fluxo de população do banco vetorial\n",
+        "height": 384,
+        "width": 720
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        864,
+        400
+      ],
+      "typeVersion": 1,
+      "id": "523fae16-8a70-4706-929c-269c36931fbc",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "url": "=http://localhost:5678/webhook/262dcc09-944f-42f6-a5aa-a465f9b76da9",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1152,
+        560
+      ],
+      "id": "1f725150-6a01-438f-9142-e5b8cb003f83",
+      "name": "GET | Init RAG"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 5
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        960,
+        560
+      ],
+      "id": "9a2eefe3-0ee3-4637-82e4-70cbdf242c6a",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "connections": {
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Banco Vetorial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criando Collection da Biblia": {
+      "main": [
+        [
+          {
+            "node": "Criando Collection dos chats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nomic Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Banco Vetorial",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document and Metadata Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Banco Vetorial",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraindo binário para JSON": {
+      "main": [
+        [
+          {
+            "node": "Separando Livros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lendo arquivos": {
+      "main": [
+        [
+          {
+            "node": "Extraindo binário para JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Banco Vetorial": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cadastro Manual": {
+      "main": [
+        [
+          {
+            "node": "Criando Collection da Biblia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Separando Livros": {
+      "main": [
+        [
+          {
+            "node": "Estruturando JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG": {
+      "main": [
+        [
+          {
+            "node": "Lendo arquivos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estruturando JSON": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d0ce5c47be8f74e27655d3da2c68d9858226e514bc211ff2444bea9dac061304"
+  }
+}
