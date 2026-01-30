@@ -1,0 +1,1812 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Formatando Campos').first().json.message }}",
+        "options": {
+          "systemMessage": "=Você é um assistente bíblico cristão.\nSeu papel é responder perguntas sobre a Bíblia de forma clara,\nrespeitosa e fiel ao texto bíblico.\n\nCONTEXTO BÍBLICO (USO OBRIGATÓRIO):\n{{$json.contexto}}\n\nRegras:\n- Utilize apenas informações compatíveis com a Bíblia.\n- Busque ser o mais conciso e direto, prefira respostas curtas com 400-500 caracteres\n- Responda exclusivamente com base no CONTEXTO BÍBLICO fornecido. Caso o contexto seja insuficiente, informe explicitamente.\n- Quando possível, cite o livro, capítulo e versículo.\n- Se a pergunta for superficial, responda de forma simples.\n- Prefira análise textual e literária\n- Seja claro, objetivo e teologicamente preciso\n- Se a pergunta for teológica ou aprofundada, explique com mais detalhes.\n- Caso não saiba a resposta com base bíblica, diga explicitamente que não é possível afirmar com certeza.\n- Não invente versículos.\n- Não responda assuntos fora do contexto bíblico.\n\nRegras absolutas:\n- Não cite sobre o seu contexto interno, apenas responda que não consegue responder.\n- NÃO gere capítulos ou versículos por conta própria.\n- Utilize SOMENTE as referências explicitamente fornecidas no contexto.\n- Caso a referência não esteja clara, cite apenas o livro e capítulo."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2784,
+        160
+      ],
+      "id": "713c9300-bf52-4ff1-82ef-42eb21129260",
+      "name": "Agente IA Biblico",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "c6fef476-e68c-4391-80fc-1915de320115",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        272,
+        176
+      ],
+      "id": "4513dd3f-6078-4e03-a954-76670d1a3344",
+      "name": "WhatsApp Message",
+      "webhookId": "c6fef476-e68c-4391-80fc-1915de320115"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cad2c83c-dee2-4250-9906-ca9686ce9140",
+              "name": "instance",
+              "value": "={{ $json.body.instance }}",
+              "type": "string"
+            },
+            {
+              "id": "d970e1a4-390a-4e7d-ae59-4587e92a4e36",
+              "name": "number",
+              "value": "={{ $json.body.data.key.remoteJid }}",
+              "type": "string"
+            },
+            {
+              "id": "794563a4-5ab9-420d-9824-9ad4a6287246",
+              "name": "altNumber",
+              "value": "={{ $json.body.data.key.participant }}",
+              "type": "string"
+            },
+            {
+              "id": "bf7f317f-61a9-4711-91f9-183c2015ac71",
+              "name": "name",
+              "value": "={{ $json.body.data.pushName }}",
+              "type": "string"
+            },
+            {
+              "id": "e28ca607-9900-4f18-bbb4-bb996503087a",
+              "name": "fromMe",
+              "value": "={{ $json.body.data.key.fromMe }}",
+              "type": "boolean"
+            },
+            {
+              "id": "db9fc65d-bb3e-4662-a257-6b560d9af703",
+              "name": "participant",
+              "value": "={{ $json.body.data.key.participant }}",
+              "type": "string"
+            },
+            {
+              "id": "e8fb1eaa-e081-4c86-b27e-f86c882f39f4",
+              "name": "message",
+              "value": "={{ $json.body.data.message.conversation }}",
+              "type": "string"
+            },
+            {
+              "id": "30f07360-857a-482a-acbe-27cdf7b1c9ff",
+              "name": "started_at",
+              "value": "={{ $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        176
+      ],
+      "id": "a8fb8e76-ed01-48ff-a0ce-bc8133ef1b00",
+      "name": "Formatando Campos"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bc49cdec-406e-410a-a140-8efc7e9d7fde",
+              "leftValue": "={{ $json.fromMe }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "f3060ef3-51b5-4950-aa05-6665d85d0e4b",
+              "leftValue": "={{ $json.participant }}",
+              "rightValue": "@s.whatsapp.net",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "aa7fcea9-55f3-4802-9cf7-f62a61a88ee5",
+              "leftValue": "={{ $json.number }}",
+              "rightValue": "status@broadcast",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        688,
+        176
+      ],
+      "id": "e6f0c541-8286-4c4d-abb2-30316c047a4a",
+      "name": "Validação"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:8b",
+        "options": {
+          "temperature": 0.2,
+          "topP": 0.9,
+          "keepAlive": "5m",
+          "numThread": 10,
+          "repeatPenalty": 1.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        2688,
+        496
+      ],
+      "id": "322947e0-9c2b-4536-85ed-ea4135bc520d",
+      "name": "Llama 3.1",
+      "alwaysOutputData": false,
+      "credentials": {
+        "ollamaApi": {
+          "id": "gCqeLPKz29jd5i4l",
+          "name": "Ollama"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Resgate da pergunta').first().json.number }}",
+        "sessionTTL": 3600
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        2880,
+        336
+      ],
+      "id": "c90230d6-772b-432e-a795-6c82afe9f5e9",
+      "name": "Cache",
+      "credentials": {
+        "redis": {
+          "id": "0OreLcVQ2ZsNdIkf",
+          "name": "Redis"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5678/webhook/1290aed5-c2cb-4fc3-a9a7-fbbf090e8630",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "resposta",
+              "value": "={{ $json.output }}"
+            },
+            {
+              "name": "pergunta",
+              "value": "={{ $('Resgate da pergunta').first().json.pergunta }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3360,
+        368
+      ],
+      "id": "3ce5b318-2fc9-4d51-b309-9ea5da033d83",
+      "name": "POST | Gravar conversa"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/embeddings",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "nomic-embed-text"
+            },
+            {
+              "name": "prompt",
+              "value": "={{ $('Validação').item.json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        992,
+        -64
+      ],
+      "id": "6f30c991-dc27-4dbc-812e-dee7067c6ff0",
+      "name": "POST | Gerar Embeddings"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2265d693-5783-4790-95e1-b9b3650ab274",
+              "leftValue": "={{ $json.texto_recuperado }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "9e4807e9-e7e2-45d9-ae77-2bcc11024f44",
+              "leftValue": "={{ $json.score }}",
+              "rightValue": 0.85,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1584,
+        -64
+      ],
+      "id": "0d30f5ed-246e-4aa9-8702-502180cd5634",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "14d3f909-e5bd-411a-94df-a4926d5d9f36",
+              "name": "pergunta",
+              "value": "={{ $('Formatando Campos').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "ada53f50-fdaa-4dc3-ac66-4c8cb90a5aa7",
+              "name": "number",
+              "value": "={{ $('Formatando Campos').item.json.number }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1552,
+        160
+      ],
+      "id": "a1bf2205-4585-4e7c-bcb3-b69fc5224668",
+      "name": "Resgate da pergunta"
+    },
+    {
+      "parameters": {
+        "resource": "search",
+        "operation": "queryPoints",
+        "collectionName": {
+          "__rl": true,
+          "value": "memoria_conversas",
+          "mode": "list",
+          "cachedResultName": "memoria_conversas"
+        },
+        "query": "={{ $json.embedding.toJsonString() }}",
+        "scoreThreshold": 0.7,
+        "limit": 20,
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-qdrant.qdrant",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -64
+      ],
+      "id": "fac2b309-0137-4ce9-9d7c-374efabf09f5",
+      "name": "Procurando respostas gravadas",
+      "credentials": {
+        "qdrantRestApi": {
+          "id": "HRPoWKQrQ6319NT4",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Acessa a lista de pontos do Qdrant\nconst points = items[0].json.result.points;\n\n// 2. Se não houver resultados, retorna um aviso amigável\nif (!points || points.length === 0) {\n    return [{\n        json: {\n            texto_recuperado: \"Nenhum contexto encontrado no banco.\",\n        }\n    }];\n}\n\n// 3. Pega apenas o primeiro item (Índice 0)\nconst primeiroPonto = points[0];\nconst payload = primeiroPonto.payload;\nlet textoExtraido = \"\";\n\n// 4. Lógica de extração do payload (idêntica à anterior, mas só para o primeiro)\nfor (const chave in payload) {\n    if (typeof payload[chave] === 'object' && payload[chave].resposta) {\n        textoExtraido = payload[chave].resposta;\n        break;\n    } else if (typeof payload[chave] === 'string') {\n        textoExtraido = payload[chave];\n    }\n}\n\n// 5. Retorna um ÚNICO objeto (um único item no n8n)\nreturn [{\n    json: {\n        texto_recuperado: textoExtraido,\n        score: primeiroPonto.score,\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        -64
+      ],
+      "id": "b7a26fe8-3d63-41ca-98a3-ede01a8eb2b8",
+      "name": "Extraindo melhor score"
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:3b",
+        "options": {
+          "temperature": 0.2,
+          "topP": 0.9,
+          "keepAlive": "3m",
+          "numThread": 10,
+          "repeatPenalty": 1.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        2816,
+        496
+      ],
+      "id": "a79055ba-6b9a-43bc-b27a-456ee6d87882",
+      "name": "Llama 3.2",
+      "alwaysOutputData": false,
+      "credentials": {
+        "ollamaApi": {
+          "id": "gCqeLPKz29jd5i4l",
+          "name": "Ollama"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/embeddings",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "bge-m3"
+            },
+            {
+              "name": "prompt",
+              "value": "={{ $json.pergunta }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2112,
+        -512
+      ],
+      "id": "0c7f69b9-f54e-426f-b3d3-c060997c4359",
+      "name": "POST | Gerar Embeddings para texto bíblico"
+    },
+    {
+      "parameters": {
+        "resource": "search",
+        "operation": "queryPoints",
+        "collectionName": {
+          "__rl": true,
+          "value": "biblia_rag_backup",
+          "mode": "list",
+          "cachedResultName": "biblia_rag_backup"
+        },
+        "query": "={{ $json.embedding.toJsonString() }}",
+        "scoreThreshold": 0.5,
+        "limit": 10,
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-qdrant.qdrant",
+      "typeVersion": 1,
+      "position": [
+        2304,
+        -512
+      ],
+      "id": "b92aa904-8bae-4191-b287-a7f121315466",
+      "name": "Procurando versículos gravados",
+      "credentials": {
+        "qdrantRestApi": {
+          "id": "HRPoWKQrQ6319NT4",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst output = [];\n\nfor (const item of items) {\n  const points = item.json.result.points;\n\n  for (const point of points) {\n    const payload = point.payload || {};\n    const meta = payload.metadata || {};\n\n    if (!payload.content) continue;\n\n    output.push({\n      json: {\n        score: point.score,\n        content: payload.content, \n        livro: meta.livro,\n        capitulo: meta.capitulo,\n        versiculos: meta.versiculo || meta.versiculos\n      }\n    });\n  }\n}\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2496,
+        -512
+      ],
+      "id": "51929709-309e-44a0-8c81-b58286133daf",
+      "name": "Formatando Contexto",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst SCORE_THRESHOLD = 0.5;\nconst MAX_ITENS = 10;\n\nconst filtrados = items\n  .map(i => i.json)\n  .filter(i => i.score >= SCORE_THRESHOLD)\n  .sort((a, b) => b.score - a.score)\n  .slice(0, MAX_ITENS);\n\nif (filtrados.length === 0) {\n  return [{\n    json: {\n      contexto: \"Nenhum contexto bíblico relevante foi encontrado.\"\n    }\n  }];\n}\n\nlet contexto = \"\";\n\nfor (const v of filtrados) {\n  contexto +=\n`[${v.livro} ${v.capitulo}:${v.versiculos} | score: ${v.score.toFixed(2)}]\n${v.content}\n\n`;\n}\n\n\nreturn [{\n  json: {\n    contexto\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2704,
+        -512
+      ],
+      "id": "ff69fa0b-2f49-4dba-b422-6089d6bdf2bc",
+      "name": "Filtrando score e criando string",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": "gemma3:4b",
+        "options": {
+          "temperature": 0.2,
+          "topP": 0.9,
+          "keepAlive": "3m",
+          "numThread": 10,
+          "repeatPenalty": 1.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        2704,
+        336
+      ],
+      "id": "13d854a5-9f0a-4461-8410-b363d211190c",
+      "name": "Gemma3",
+      "alwaysOutputData": false,
+      "credentials": {
+        "ollamaApi": {
+          "id": "gCqeLPKz29jd5i4l",
+          "name": "Ollama"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7fe28375-18eb-4dd6-8277-74776155d3d8",
+              "name": "finished_at",
+              "value": "={{$now}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3184,
+        -176
+      ],
+      "id": "a9752227-0754-4337-824d-d26d1eb81025",
+      "name": "Obtendo tempo final do fluxo"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "value",
+        "key": "={{ $('Formatando Campos').first().json.number }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        2896,
+        -512
+      ],
+      "id": "c7c90ce3-97ab-47bf-95a0-ff8e2d92d1b0",
+      "name": "GET | Obtendo mensagens antigas",
+      "credentials": {
+        "redis": {
+          "id": "0OreLcVQ2ZsNdIkf",
+          "name": "Redis"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $('Formatando Campos').first().json.number }}",
+        "value": "={{ $json.message.toJsonString() }}\n\n{\n  \"role\": \"user\", \"content\":\"{{ $('Code | Trazendo 5 últimas mensagens').item.json.perguntaPura }}\"\n}",
+        "expire": true,
+        "ttl": 3600
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3488,
+        -512
+      ],
+      "id": "84c71689-9048-4019-b0e0-d8e7ee95d25d",
+      "name": "SET | Adicionando mensagem a memória",
+      "credentials": {
+        "redis": {
+          "id": "0OreLcVQ2ZsNdIkf",
+          "name": "Redis"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Pega o valor bruto do Redis\nlet historicoRaw = $('GET | Obtendo mensagens antigas').first().json.value;\nlet mensagens = [];\n\nif (historicoRaw) {\n    try {\n        // Tenta o parse direto (caso o formato mude para array no futuro)\n        mensagens = JSON.parse(historicoRaw);\n    } catch (e) {\n        // Se falhar, é porque os JSONs estão vindo em sequência: {}{}. \n        // Vamos corrigir envolvendo-os em [] e colocando vírgulas entre eles.\n        const corrigido = '[' + historicoRaw.replace(/}\\s*{/g, '},{') + ']';\n        mensagens = JSON.parse(corrigido);\n    }\n}\n\n// 2. Define o limite de memória (últimas 5 interações)\nif (Array.isArray(mensagens) && mensagens.length > 5) {\n    mensagens = mensagens.slice(-5);\n}\n\n// 3. Prepara a Pergunta Atual\nconst perguntaAtual = $('Formatando Campos').first().json.message;\n\n// 4. Retorno para o n8n\nreturn {\n    // Retornamos como array para o Ollama ler corretamente\n    mensagens: mensagens, \n    perguntaPura: perguntaAtual \n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3104,
+        -512
+      ],
+      "id": "c01a30ff-78c2-4881-9a49-3a4e2fdc7364",
+      "name": "Code | Trazendo 5 últimas mensagens"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/chat",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\nJSON.stringify({\n  \"model\": \"gemma3:4b\",\n  \"stream\": false,\n  \"keep_alive\": \"5m\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Você é um assistente bíblico cristão.\\n\\nSeu papel é responder perguntas sobre a Bíblia de forma clara, respeitosa e fiel ao texto bíblico. \\n\\nRegras:\\n- Utilize apenas informações compatíveis com a Bíblia.\\n- Busque ser o mais conciso e direto, prefira respostas curtas com 400-500 caracteres\\n- Responda exclusivamente com base no CONTEXTO BÍBLICO fornecido. Caso o contexto seja insuficiente, informe explicitamente.\\n- Quando possível, cite o livro, capítulo e versículo.\\n- Se a pergunta for superficial, responda de forma simples.\\n- Se a pergunta for teológica ou aprofundada, explique com mais detalhes.\\n- Caso não saiba a resposta com base bíblica, diga que não é possível afirmar com certeza.\\n- Não invente versículos.\\n- Não responda assuntos fora do contexto bíblico.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Você é um assistente especializado em estudos bíblicos e exegese.\\n\\nMENSAGENS ANTERIORES DESSE USUÁRIO(Use esse contexto das antigas mensagens para caso o usuário pergunte algo referente a conversa anterior contida abaixo, caso não, responda normalmente como se fosse a primeira conversa):\\n\\n\" + ($json.mensagens.isEmpty() ? \"\" : $json.mensagens) + \"CONTEXTO BÍBLICO (USO OBRIGATÓRIO):\\n\\n\" + ($('Filtrando score e criando string').first().json.contexto || \"\") + \"\\n\\nPERGUNTA:\" + ($('Formatando Campos').first().json.message || \"\") + \"\\n\\nINSTRUÇÕES:\\n- Utilize EXCLUSIVAMENTE as informações presentes no CONTEXTO BÍBLICO.\\n- Não utilize conhecimento prévio ou treinamento próprio.\\n- Se a resposta não estiver explicitamente no contexto, diga que não é possível responder.\\n- Cite explicitamente livro, capítulo e versículo ao responder\\n- Não invente informações fora do contexto\\n- Prefira análise textual e literária\\n- Seja claro, objetivo e teologicamente preciso\\n- Em perguntas simples, seja direto.\\n\\nINSTRUÇÕES ABSOLUTAS:\\n- NÃO gere capítulos ou versículos por conta própria.\\n- Utilize SOMENTE as referências explicitamente fornecidas no contexto.\\n- Caso a referência não esteja clara, cite apenas o livro e capítulo.\"\n    }\n  ],\n  \"options\": {\n    \"temperature\": 0.2,\n    \"repeat_penalty\": 1.2,\n    \"num_thread\": 10, \n    \"top_p\": 0.9\n  }\n})\n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3296,
+        -512
+      ],
+      "id": "c36d9932-6fc9-48cd-9025-5629f2fb3233",
+      "name": "POST | Fazendo pergunta ao agente de IA"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agente-ia-biblico",
+        "remoteJid": "={{ $('Formatando Campos').first().json.number }}",
+        "messageText": "={{ $json.texto_recuperado }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        -64
+      ],
+      "id": "97cf8271-d4f0-4b3d-b92d-a7fe591aa20c",
+      "name": "Whatsapp | Enviar mensagem recuperada",
+      "credentials": {
+        "evolutionApi": {
+          "id": "W0j14QYAldCfCTd0",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Formatando Campos').item.json.instance }}",
+        "remoteJid": "={{ $('Formatando Campos').item.json.number }}",
+        "messageText": "Consultando os textos sagrados... Aguarde um instante enquanto percorro as páginas da Bíblia para você. 🙏",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        800,
+        -64
+      ],
+      "id": "71bd7045-a978-4e38-b8e6-96b5b72d8b69",
+      "name": "Whatsapp | Feedback ao usuário",
+      "credentials": {
+        "evolutionApi": {
+          "id": "W0j14QYAldCfCTd0",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agente-ia-biblico",
+        "remoteJid": "={{ $('Formatando Campos').first().json.number }}",
+        "messageText": "={{ $json.output}}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        3360,
+        160
+      ],
+      "id": "02098159-19fd-49c7-bf9a-2239b30d4d1e",
+      "name": "Whatsapp | Enviar texto gerado",
+      "credentials": {
+        "evolutionApi": {
+          "id": "W0j14QYAldCfCTd0",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "llm_metrics",
+          "mode": "list",
+          "cachedResultName": "llm_metrics"
+        },
+        "table": {
+          "__rl": true,
+          "value": "executions",
+          "mode": "list",
+          "cachedResultName": "executions"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "success": "={{ $('POST | Fazendo pergunta ao agente de IA1').item.json.message.content.isNotEmpty()}}",
+            "latency_ms": "={{ (($('Obtendo tempo final do fluxo').first().json.finished_at.toDateTime() - $('Formatando Campos').first().json.started_at.toDateTime()) / 1000).toInt() }}",
+            "prompt_tokens": "={{ $('POST | Fazendo pergunta ao agente de IA1').item.json.prompt_eval_count }}",
+            "completion_tokens": "={{ $('POST | Fazendo pergunta ao agente de IA1').item.json.eval_count }}",
+            "total_tokens": "={{ $('POST | Fazendo pergunta ao agente de IA1').item.json.prompt_eval_count.toString().toNumber() + $('POST | Fazendo pergunta ao agente de IA1').item.json.eval_count.toString().toNumber() }}",
+            "model_id": "={{ $json.id }}",
+            "prompt": "={{ $('Resgate da pergunta').first().json.pergunta }}",
+            "started_at": "={{ $('Formatando Campos').first().json.started_at.toDateTime().toISO() }}",
+            "finished_at": "={{ $('Obtendo tempo final do fluxo').first().json.finished_at.toDateTime().toISO() }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "model_id",
+              "displayName": "model_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "started_at",
+              "displayName": "started_at",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "finished_at",
+              "displayName": "finished_at",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "latency_ms",
+              "displayName": "latency_ms",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "success",
+              "displayName": "success",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prompt_tokens",
+              "displayName": "prompt_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completion_tokens",
+              "displayName": "completion_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_tokens",
+              "displayName": "total_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3648,
+        -176
+      ],
+      "id": "9dbf95a1-60b5-45c5-8e4d-7e4f958de1d9",
+      "name": "PostgreSQL | Inserindo Execuções",
+      "credentials": {
+        "postgres": {
+          "id": "zvidDrwjzVyjLPDX",
+          "name": "LLM Metrics - DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "llm_metrics",
+          "mode": "list",
+          "cachedResultName": "llm_metrics"
+        },
+        "table": {
+          "__rl": true,
+          "value": "models",
+          "mode": "list",
+          "cachedResultName": "models"
+        },
+        "limit": 10,
+        "where": {
+          "values": [
+            {
+              "column": "name",
+              "value": "={{ $('POST | Fazendo pergunta ao agente de IA1').first().json.model.split(':')[0] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3440,
+        -176
+      ],
+      "id": "6f78961d-db2f-48c8-96ba-d0e760feb08f",
+      "name": "PostgreSQL | Obtendo id do modelo",
+      "credentials": {
+        "postgres": {
+          "id": "zvidDrwjzVyjLPDX",
+          "name": "LLM Metrics - DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Fluxo de envio de mensagens\n\n\n## A mensagem é recebida do evolution api e enviada para esse webhook, após isso é validado se é apenas uma mensagem de texto\n## E depois enviado um feedback ao usuário\n## A coleção de conversas anteriores é consultado, se a pergunta atual do usuário for muito parecida é enviada a mensagem sem consultar o agente\n## Caso não seja parecida a coleção da bíblia é consultada e traz os versículos semanticamente parecidos com a pergunta\n## o agente processa e consome os versículos retornados, grava em cache a conversa (para contexto) e após isso envia a mensagem para o usuário\n## E a conversa é gravada na coleção de conversas do agente",
+        "height": 1328,
+        "width": 4976,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        -560
+      ],
+      "typeVersion": 1,
+      "id": "abc9e096-6bf1-490c-a2b4-389e11f75376",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/embeddings",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "bge-m3"
+            },
+            {
+              "name": "prompt",
+              "value": "={{ $json.pergunta }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1728,
+        160
+      ],
+      "id": "b9f969dc-78e1-4f74-8e62-3fa46c683d44",
+      "name": "POST | Gerar Embeddings para texto bíblico1"
+    },
+    {
+      "parameters": {
+        "resource": "search",
+        "operation": "queryPoints",
+        "collectionName": {
+          "__rl": true,
+          "value": "biblia_rag_backup",
+          "mode": "list",
+          "cachedResultName": "biblia_rag_backup"
+        },
+        "query": "={{ $json.embedding.toJsonString() }}",
+        "scoreThreshold": 0.4,
+        "limit": 10,
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-qdrant.qdrant",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        160
+      ],
+      "id": "56d21cc9-6b9a-4010-9175-688fc1637057",
+      "name": "Procurando versículos gravados1",
+      "credentials": {
+        "qdrantRestApi": {
+          "id": "HRPoWKQrQ6319NT4",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst output = [];\n\nfor (const item of items) {\n  const points = item.json.result.points;\n\n  for (const point of points) {\n    const payload = point.payload || {};\n    const meta = payload.metadata || {};\n\n    if (!payload.content) continue;\n\n    output.push({\n      json: {\n        score: point.score,\n        content: payload.content, \n        livro: meta.livro,\n        capitulo: meta.capitulo,\n        versiculos: meta.versiculo || meta.versiculos\n      }\n    });\n  }\n}\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2128,
+        160
+      ],
+      "id": "5f32e2f5-088d-4afe-ba75-9341109babca",
+      "name": "Formatando Contexto1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst SCORE_THRESHOLD = 0.4;\nconst MAX_ITENS = 10;\n\nconst filtrados = items\n  .map(i => i.json)\n  .filter(i => i.score >= SCORE_THRESHOLD)\n  .sort((a, b) => b.score - a.score)\n  .slice(0, MAX_ITENS);\n\nif (filtrados.length === 0) {\n  return [{\n    json: {\n      contexto: \"Nenhum contexto bíblico relevante foi encontrado.\"\n    }\n  }];\n}\n\nlet contexto = \"\";\n\nfor (const v of filtrados) {\n  contexto +=\n`[${v.livro} ${v.capitulo}:${v.versiculos} | score: ${v.score.toFixed(2)}]\n${v.content}\n\n`;\n}\n\n\nreturn [{\n  json: {\n    contexto\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2336,
+        160
+      ],
+      "id": "2b4ef90e-d438-467e-a0d3-0b60d81d8603",
+      "name": "Filtrando score e criando string1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7fe28375-18eb-4dd6-8277-74776155d3d8",
+              "name": "finished_at",
+              "value": "={{$now}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2592,
+        -320
+      ],
+      "id": "1a8a1e50-dea4-4691-970a-1c32072318c8",
+      "name": "Obtendo tempo final do fluxo1"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "llm_metrics",
+          "mode": "list",
+          "cachedResultName": "llm_metrics"
+        },
+        "table": {
+          "__rl": true,
+          "value": "executions",
+          "mode": "list",
+          "cachedResultName": "executions"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "finished_at": "={{ $('Obtendo tempo final do fluxo1').first().json.finished_at.toDateTime().toISO() }}",
+            "started_at": "={{ $('Formatando Campos').first().json.started_at.toDateTime().toISO() }}",
+            "latency_ms": "={{ (($('Obtendo tempo final do fluxo1').first().json.finished_at.toDateTime() - $('Formatando Campos').first().json.started_at.toDateTime()) / 1000).toInt() }}",
+            "success": "={{ $('POST | Fazendo pergunta ao agente de IA').item.json.message.content.isNotEmpty()}}",
+            "prompt_tokens": "={{ $('POST | Fazendo pergunta ao agente de IA').item.json.prompt_eval_count }}",
+            "completion_tokens": "={{ $('POST | Fazendo pergunta ao agente de IA').item.json.eval_count }}",
+            "total_tokens": "={{ $('POST | Fazendo pergunta ao agente de IA').item.json.prompt_eval_count.toString().toNumber() + $('POST | Fazendo pergunta ao agente de IA').item.json.eval_count.toString().toNumber() }}",
+            "model_id": "={{ $json.id }}",
+            "prompt": "={{ $('Resgate da pergunta').first().json.pergunta }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "model_id",
+              "displayName": "model_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "started_at",
+              "displayName": "started_at",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "finished_at",
+              "displayName": "finished_at",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "latency_ms",
+              "displayName": "latency_ms",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "success",
+              "displayName": "success",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prompt_tokens",
+              "displayName": "prompt_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completion_tokens",
+              "displayName": "completion_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_tokens",
+              "displayName": "total_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3024,
+        -320
+      ],
+      "id": "8df454c5-8272-424f-8066-9c061882a84d",
+      "name": "PostgreSQL | Inserindo Execuções1",
+      "credentials": {
+        "postgres": {
+          "id": "zvidDrwjzVyjLPDX",
+          "name": "LLM Metrics - DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "llm_metrics",
+          "mode": "list",
+          "cachedResultName": "llm_metrics"
+        },
+        "table": {
+          "__rl": true,
+          "value": "models",
+          "mode": "list",
+          "cachedResultName": "models"
+        },
+        "limit": 10,
+        "where": {
+          "values": [
+            {
+              "column": "name",
+              "value": "={{ $('POST | Fazendo pergunta ao agente de IA').first().json.model.split(':')[0] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2816,
+        -320
+      ],
+      "id": "1d708666-fb1b-48da-b901-8beaf1141a73",
+      "name": "PostgreSQL | Obtendo id do modelo1",
+      "credentials": {
+        "postgres": {
+          "id": "zvidDrwjzVyjLPDX",
+          "name": "LLM Metrics - DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "llm_metrics",
+          "mode": "list",
+          "cachedResultName": "llm_metrics"
+        },
+        "table": {
+          "__rl": true,
+          "value": "responses",
+          "mode": "list",
+          "cachedResultName": "responses"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "execution_id": "={{ $json.id }}",
+            "model_id": "={{ $json.model_id }}",
+            "prompt": "={{ $json.prompt }}",
+            "response": "={{ $('POST | Fazendo pergunta ao agente de IA1').item.json.message.content }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "execution_id",
+              "displayName": "execution_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "model_id",
+              "displayName": "model_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "response",
+              "displayName": "response",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3888,
+        -176
+      ],
+      "id": "2a95cc08-a221-4881-964e-ebd062510be1",
+      "name": "PostgreSQL | Inserindo respostas em banco",
+      "credentials": {
+        "postgres": {
+          "id": "zvidDrwjzVyjLPDX",
+          "name": "LLM Metrics - DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n    r.id            AS response_id,\n    r.prompt        AS prompt,\n    r.response      AS response,\n    m.name || ':' || m.parameters AS model\nFROM llm_metrics.responses r\nJOIN llm_metrics.models m ON m.id = r.model_id\nLEFT JOIN llm_metrics.response_accuracy a\n       ON a.response_id = r.id\nWHERE a.id IS NULL\nORDER BY r.created_at\nLIMIT 1;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4144,
+        -176
+      ],
+      "id": "acf4a14d-e59a-4839-9d98-be57955c2c47",
+      "name": "Buscar respostas que não vieram antes",
+      "credentials": {
+        "postgres": {
+          "id": "zvidDrwjzVyjLPDX",
+          "name": "LLM Metrics - DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "llm_metrics",
+          "mode": "list",
+          "cachedResultName": "llm_metrics"
+        },
+        "table": {
+          "__rl": true,
+          "value": "response_accuracy",
+          "mode": "list",
+          "cachedResultName": "response_accuracy"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "is_correct": true,
+            "response_id": "={{ $json.response_id }}",
+            "evaluation_method": "=O agente conseguiu trazer uma resposta correta que e referencia bíblica também, mas trouxe mais informações coerentes como o nome da cidade, mas negando seu proprio contexto que responde a pergunta, trazendo certa confusão.",
+            "score": 0.7
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "response_id",
+              "displayName": "response_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "is_correct",
+              "displayName": "is_correct",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "evaluation_method",
+              "displayName": "evaluation_method",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "evaluated_at",
+              "displayName": "evaluated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4368,
+        -176
+      ],
+      "id": "d87e8cdf-7048-4727-bf39-1b851ee7fb3c",
+      "name": "inserir na tabela de acurácia",
+      "credentials": {
+        "postgres": {
+          "id": "zvidDrwjzVyjLPDX",
+          "name": "LLM Metrics - DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- O CASCADE resolve o problema da FK deletando os dependentes ou permitindo a limpeza\nTRUNCATE TABLE llm_metrics.executions, llm_metrics.resource_metrics RESTART IDENTITY CASCADE;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2896,
+        -112
+      ],
+      "id": "a53a7f2e-0e75-4df1-9740-2d713c62f1cf",
+      "name": "Limpando Execuções e Recursos",
+      "credentials": {
+        "postgres": {
+          "id": "zvidDrwjzVyjLPDX",
+          "name": "LLM Metrics - DB"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Agente IA Biblico": {
+      "main": [
+        [
+          {
+            "node": "Whatsapp | Enviar texto gerado",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "POST | Gravar conversa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Message": {
+      "main": [
+        [
+          {
+            "node": "Formatando Campos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatando Campos": {
+      "main": [
+        [
+          {
+            "node": "Validação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validação": {
+      "main": [
+        [
+          {
+            "node": "Whatsapp | Feedback ao usuário",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Llama 3.1": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Cache": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente IA Biblico",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST | Gerar Embeddings": {
+      "main": [
+        [
+          {
+            "node": "Procurando respostas gravadas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Whatsapp | Enviar mensagem recuperada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resgate da pergunta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resgate da pergunta": {
+      "main": [
+        [
+          {
+            "node": "POST | Gerar Embeddings para texto bíblico1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procurando respostas gravadas": {
+      "main": [
+        [
+          {
+            "node": "Extraindo melhor score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraindo melhor score": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Llama 3.2": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "POST | Gerar Embeddings para texto bíblico": {
+      "main": [
+        [
+          {
+            "node": "Procurando versículos gravados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procurando versículos gravados": {
+      "main": [
+        [
+          {
+            "node": "Formatando Contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatando Contexto": {
+      "main": [
+        [
+          {
+            "node": "Filtrando score e criando string",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrando score e criando string": {
+      "main": [
+        [
+          {
+            "node": "GET | Obtendo mensagens antigas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemma3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente IA Biblico",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtendo tempo final do fluxo": {
+      "main": [
+        [
+          {
+            "node": "PostgreSQL | Obtendo id do modelo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET | Obtendo mensagens antigas": {
+      "main": [
+        [
+          {
+            "node": "Code | Trazendo 5 últimas mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SET | Adicionando mensagem a memória": {
+      "main": [
+        []
+      ]
+    },
+    "Code | Trazendo 5 últimas mensagens": {
+      "main": [
+        [
+          {
+            "node": "POST | Fazendo pergunta ao agente de IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST | Fazendo pergunta ao agente de IA": {
+      "main": [
+        [
+          {
+            "node": "SET | Adicionando mensagem a memória",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Whatsapp | Enviar mensagem recuperada": {
+      "main": [
+        []
+      ]
+    },
+    "Whatsapp | Feedback ao usuário": {
+      "main": [
+        [
+          {
+            "node": "POST | Gerar Embeddings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Whatsapp | Enviar texto gerado": {
+      "main": [
+        []
+      ]
+    },
+    "PostgreSQL | Inserindo Execuções": {
+      "main": [
+        [
+          {
+            "node": "PostgreSQL | Inserindo respostas em banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostgreSQL | Obtendo id do modelo": {
+      "main": [
+        [
+          {
+            "node": "PostgreSQL | Inserindo Execuções",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST | Gerar Embeddings para texto bíblico1": {
+      "main": [
+        [
+          {
+            "node": "Procurando versículos gravados1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procurando versículos gravados1": {
+      "main": [
+        [
+          {
+            "node": "Formatando Contexto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatando Contexto1": {
+      "main": [
+        [
+          {
+            "node": "Filtrando score e criando string1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrando score e criando string1": {
+      "main": [
+        [
+          {
+            "node": "Agente IA Biblico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtendo tempo final do fluxo1": {
+      "main": [
+        [
+          {
+            "node": "PostgreSQL | Obtendo id do modelo1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostgreSQL | Obtendo id do modelo1": {
+      "main": [
+        [
+          {
+            "node": "PostgreSQL | Inserindo Execuções1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostgreSQL | Inserindo respostas em banco": {
+      "main": [
+        [
+          {
+            "node": "Buscar respostas que não vieram antes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar respostas que não vieram antes": {
+      "main": [
+        [
+          {
+            "node": "inserir na tabela de acurácia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "inserir na tabela de acurácia": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d0ce5c47be8f74e27655d3da2c68d9858226e514bc211ff2444bea9dac061304"
+  }
+}
