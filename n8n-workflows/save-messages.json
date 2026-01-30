@@ -1,0 +1,206 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "memoria_conversas",
+          "mode": "list",
+          "cachedResultName": "memoria_conversas"
+        },
+        "embeddingBatchSize": 20,
+        "options": {
+          "contentPayloadKey": "={{ $json.body.resposta}}",
+          "metadataPayloadKey": "={{ $json.body.pergunta }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        368
+      ],
+      "id": "89d19d7e-d043-4057-b91b-908f558b8bf3",
+      "name": "Qdrant Vector Store",
+      "credentials": {
+        "qdrantApi": {
+          "id": "N8KBvMQi9cbTJ7eH",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{$json.body.resposta}}",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "pergunta",
+                "value": "={{$json.body.pergunta}}"
+              },
+              {
+                "name": "resposta",
+                "value": "={{$json.body.resposta}}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        528
+      ],
+      "id": "83b476e6-3a1a-4408-a690-c0ea5bb82b50",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        240,
+        560
+      ],
+      "id": "f2bf8aa8-a354-466d-a556-6a25e937e816",
+      "name": "Nomic Embeddings",
+      "credentials": {
+        "ollamaApi": {
+          "id": "gCqeLPKz29jd5i4l",
+          "name": "Ollama"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1290aed5-c2cb-4fc3-a9a7-fbbf090e8630",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        16,
+        368
+      ],
+      "id": "68d572f0-8080-4b96-ba13-d7a7a0383b43",
+      "name": "Workflow Request",
+      "webhookId": "1290aed5-c2cb-4fc3-a9a7-fbbf090e8630"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        480,
+        672
+      ],
+      "id": "c2cde534-ab7f-4915-aac0-cf6120fdaa0b",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "content": "# Fluxo para salvar conversas do agente\n\n## **Contém outra coleção que são gravadas as conversas e essa coleção é consultada no fluxo de conversas antes de ser consultado o RAG padrão e agente**",
+        "height": 800,
+        "width": 1120
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -144,
+        48
+      ],
+      "typeVersion": 1,
+      "id": "582d4fa4-1577-4c97-a6e2-acde6d892f2c",
+      "name": "Sticky Note"
+    }
+  ],
+  "connections": {
+    "Qdrant Vector Store": {
+      "main": [
+        []
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nomic Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Request": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Workflow Request": [
+      {
+        "headers": {
+          "content-type": "application/json",
+          "user-agent": "PostmanRuntime/7.39.1",
+          "accept": "*/*",
+          "cache-control": "no-cache",
+          "postman-token": "0c595159-6c61-4f60-8ac3-6956e7ca8f0b",
+          "host": "localhost:5678",
+          "accept-encoding": "gzip, deflate, br",
+          "connection": "keep-alive",
+          "content-length": "194"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "response": "Sim, de acordo com a Bíblia, no princípio Deus criou os céus e a terra. Isso está registrado em Gênesis 1:1.",
+          "question": "No princípio Deus criou os céus e a terra ?"
+        },
+        "webhookUrl": "http://localhost:5678/webhook/1290aed5-c2cb-4fc3-a9a7-fbbf090e8630",
+        "executionMode": "production"
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d0ce5c47be8f74e27655d3da2c68d9858226e514bc211ff2444bea9dac061304"
+  }
+}
