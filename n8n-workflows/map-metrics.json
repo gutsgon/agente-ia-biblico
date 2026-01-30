@@ -1,0 +1,293 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE DATABASE llm_metrics_db;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        512,
+        -208
+      ],
+      "id": "14248e10-7cc8-4e62-81a3-05d5a212417a",
+      "name": "Criando Banco de Registro",
+      "credentials": {
+        "postgres": {
+          "id": "8e657mDEMLC2HGYQ",
+          "name": "N8N - DB connection"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE USER metrics_user WITH PASSWORD 'metrics_pass';\nGRANT ALL PRIVILEGES ON DATABASE llm_metrics_db TO metrics_user;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        752,
+        -208
+      ],
+      "id": "c981525a-9c8d-4307-8960-b6e3532a5f32",
+      "name": "Criando usuário do Banco",
+      "credentials": {
+        "postgres": {
+          "id": "8e657mDEMLC2HGYQ",
+          "name": "N8N - DB connection"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE SCHEMA IF NOT EXISTS llm_metrics;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        976,
+        -208
+      ],
+      "id": "9fe91a78-f822-4ff8-8887-915259a13e90",
+      "name": "Criando Schema",
+      "credentials": {
+        "postgres": {
+          "id": "8e657mDEMLC2HGYQ",
+          "name": "N8N - DB connection"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE llm_metrics.models (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    name TEXT NOT NULL,\n    provider TEXT NOT NULL,           -- ollama\n    parameters TEXT,                  -- 4b, 8b, etc\n    embedding_model TEXT,             -- bge-m3\n    created_at TIMESTAMP DEFAULT now()\n);\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        512,
+        16
+      ],
+      "id": "cd6e1365-c8e9-4ba3-a021-80d7e8f01cbb",
+      "name": "Criando Tabela de Modelos",
+      "credentials": {
+        "postgres": {
+          "id": "8e657mDEMLC2HGYQ",
+          "name": "N8N - DB connection"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE llm_metrics.executions (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    model_id UUID REFERENCES llm_metrics.models(id),\n    prompt TEXT NOT NULL,\n    started_at TIMESTAMP NOT NULL,\n    finished_at TIMESTAMP NOT NULL,\n    latency_ms INTEGER,\n    success BOOLEAN DEFAULT true\n);\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        752,
+        16
+      ],
+      "id": "a31c5d75-76bb-4119-b5df-20cfd7976d2b",
+      "name": "Criando Tabela de Execuções",
+      "credentials": {
+        "postgres": {
+          "id": "8e657mDEMLC2HGYQ",
+          "name": "N8N - DB connection"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE llm_metrics.resource_metrics (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    execution_id UUID REFERENCES llm_metrics.executions(id),\n    cpu_percent NUMERIC(5,2),\n    memory_mb NUMERIC(10,2),\n    disk_read_mb NUMERIC(10,2),\n    disk_write_mb NUMERIC(10,2),\n    net_rx_mb NUMERIC(10,2),\n    net_tx_mb NUMERIC(10,2),\n    collected_at TIMESTAMP DEFAULT now()\n);\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        992,
+        16
+      ],
+      "id": "ba6304a6-c462-4d4b-a877-b173146ee3ac",
+      "name": "Criando Tabela de Recursos",
+      "credentials": {
+        "postgres": {
+          "id": "8e657mDEMLC2HGYQ",
+          "name": "N8N - DB connection"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE llm_metrics.token_metrics (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    execution_id UUID REFERENCES llm_metrics.executions(id),\n    prompt_tokens INTEGER,\n    completion_tokens INTEGER,\n    total_tokens INTEGER\n);\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        512,
+        224
+      ],
+      "id": "8ee6f3cf-709f-49e1-b72a-6ecd1c23bb27",
+      "name": "Criando tabela de Tokens gerados",
+      "credentials": {
+        "postgres": {
+          "id": "8e657mDEMLC2HGYQ",
+          "name": "N8N - DB connection"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO llm_metrics.models (name, provider, parameters, embedding_model)\nVALUES\n('gemma3', 'ollama', '4b', 'bge-m3');\nINSERT INTO llm_metrics.models (name, provider, parameters, embedding_model)\nVALUES\n('llama3.2', 'ollama', '3b', 'bge-m3');\nINSERT INTO llm_metrics.models (name, provider, parameters, embedding_model)\nVALUES\n('llama3.1', 'ollama', '8b', 'nomic-embed-text');\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        752,
+        224
+      ],
+      "id": "d298cfbe-34c5-41db-b662-820c1b541580",
+      "name": "Inserindo modelos nas tabelas",
+      "credentials": {
+        "postgres": {
+          "id": "8e657mDEMLC2HGYQ",
+          "name": "N8N - DB connection"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Fluxo para criar bancos e tabelas para obtenção de métricas de desempenho dos modelos\n\n## Esse banco, tabelas e schema vão ser usados na automação via script pyhon para medir desempenho dos modelos;\n## Os modelos testados e escolhidos foram: gemma3. llama3.1, llama3.2;\n## Será testado consumo de CPU, RAM, I/O, Rede, Latência dos fluxos, Média de tempo de resposta, Consumo de Tokens e etc.",
+        "height": 1072,
+        "width": 1536
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        16,
+        -512
+      ],
+      "typeVersion": 1,
+      "id": "c0b90eb8-9a23-4d54-8bf0-be2bbff10775",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        304,
+        -208
+      ],
+      "id": "3a33f6e8-77cd-42a7-bc7c-d12d21dfb5e4",
+      "name": "Trigger Manual"
+    }
+  ],
+  "connections": {
+    "Criando Banco de Registro": {
+      "main": [
+        [
+          {
+            "node": "Criando usuário do Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criando usuário do Banco": {
+      "main": [
+        [
+          {
+            "node": "Criando Schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criando Schema": {
+      "main": [
+        [
+          {
+            "node": "Criando Tabela de Modelos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criando Tabela de Modelos": {
+      "main": [
+        [
+          {
+            "node": "Criando Tabela de Execuções",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criando Tabela de Execuções": {
+      "main": [
+        [
+          {
+            "node": "Criando Tabela de Recursos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criando Tabela de Recursos": {
+      "main": [
+        [
+          {
+            "node": "Criando tabela de Tokens gerados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criando tabela de Tokens gerados": {
+      "main": [
+        [
+          {
+            "node": "Inserindo modelos nas tabelas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Manual": {
+      "main": [
+        [
+          {
+            "node": "Criando Banco de Registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d0ce5c47be8f74e27655d3da2c68d9858226e514bc211ff2444bea9dac061304"
+  }
+}
