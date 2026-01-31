@@ -75,7 +75,7 @@
     },
     {
       "parameters": {
-        "content": "# Criando Embendings com modelo nomic-embed-text do Ollama e salvando no banco vetorial\n\n## Esse fluxo faz a população de embendings para consulta do modelo llama3.1 com 8 bilhões de parâmetros, o qual vai utilizar da similaridade entre os embendings salvos com a pergunta do usuário, caso haja algo parecido o modelo utilizará o que recebeu de informação para responder o usuário\n",
+        "content": "# Criando Embendings com modelo bge-m3 do Ollama e salvando no banco vetorial\n\n## Esse fluxo faz a população de embendings para consulta do modelo llama3.1 com 8 bilhões de parâmetros, o qual vai utilizar da similaridade entre os embendings salvos com a pergunta do usuário, caso haja algo parecido o modelo utilizará o que recebeu de informação para responder o usuário\n",
         "height": 784,
         "width": 2096,
         "color": 5
@@ -278,26 +278,6 @@
       ],
       "id": "1f725150-6a01-438f-9142-e5b8cb003f83",
       "name": "GET | Init RAG"
-    },
-    {
-      "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "seconds",
-              "secondsInterval": 5
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.3,
-      "position": [
-        960,
-        560
-      ],
-      "id": "9a2eefe3-0ee3-4637-82e4-70cbdf242c6a",
-      "name": "Schedule Trigger"
     }
   ],
   "connections": {
@@ -421,11 +401,6 @@
             "index": 0
           }
         ]
-      ]
-    },
-    "Schedule Trigger": {
-      "main": [
-        []
       ]
     }
   },
